@@ -15,20 +15,20 @@ URL_API = f"{URL_PAGINA}?handler=Arribos"
 
 CONSULTAS = [
     # --- TUS PARADAS FAVORITAS ---
-    {"seccion": "MIS FAVORITOS", "parada": "1260", "linea": "50B", "cod": "1014", "mostrar": True},
-    {"seccion": "MIS FAVORITOS", "parada": "NV1311", "linea": "50B", "cod": "1014", "mostrar": True},
-    {"seccion": "MIS FAVORITOS", "parada": "NV2316", "linea": "50B", "cod": "1014", "mostrar": True},
+    {"seccion": "MIS FAVORITOS", "parada": "1260", "calle": "Av. Belgrano y Pulmari", "linea": "50B", "cod": "1014", "mostrar": True},
+    {"seccion": "MIS FAVORITOS", "parada": "NV1311", "calle": "Santa Cruz y Riavitz", "linea": "50B", "cod": "1014", "mostrar": True},
+    {"seccion": "MIS FAVORITOS", "parada": "NV2316", "calle": "Martellota y Las Lajas", "linea": "50B", "cod": "1014", "mostrar": True},
     # Nota: Puse "1014" provisionalmente para la 50R. Si no carga, hay que buscar su código real.
-    {"seccion": "MIS FAVORITOS", "parada": "NV5019", "linea": "50R", "cod": "1014", "mostrar": True}, 
+    {"seccion": "MIS FAVORITOS", "parada": "NV5019", "calle": "Ruta 22 ETOP", "linea": "50R", "cod": "1014", "mostrar": True}, 
 
     # --- CABECERAS ORIGINALES ---
-    {"seccion": "CABECERA", "parada": "NV2000", "linea": "50B", "cod": "1014", "mostrar": True},
-    {"seccion": "CABECERA", "parada": "NV1014", "linea": "50A", "cod": "1013", "mostrar": True},
+    {"seccion": "CABECERA", "parada": "NV2000", "calle": "Cabecera Plottier", "linea": "50B", "cod": "1014", "mostrar": True},
+    {"seccion": "CABECERA", "parada": "NV1014", "calle": "Cabecera Neuquén", "linea": "50A", "cod": "1013", "mostrar": True},
 
     # --- BARRIDO GPS ---
-    {"seccion": "BARRIDO", "parada": "NV1259", "linea": "50B", "cod": "1014", "mostrar": False},
-    {"seccion": "BARRIDO", "parada": "NV1058", "linea": "50B", "cod": "1014", "mostrar": False},
-    {"seccion": "BARRIDO", "parada": "NV1058", "linea": "50A", "cod": "1013", "mostrar": False},
+    {"seccion": "BARRIDO", "parada": "NV1259", "calle": "", "linea": "50B", "cod": "1014", "mostrar": False},
+    {"seccion": "BARRIDO", "parada": "NV1058", "calle": "", "linea": "50B", "cod": "1014", "mostrar": False},
+    {"seccion": "BARRIDO", "parada": "NV1058", "calle": "", "linea": "50A", "cod": "1013", "mostrar": False},
 ]
 
 session = requests.Session()
@@ -117,7 +117,7 @@ HTML_TEMPLATE = """
     .line-tag { background: #313244; font-size: 12px; font-weight: 700; padding: 4px 8px; border-radius: 6px; }
     .line-50b { color: #89B4FA; }
     .line-50a { color: #A6E3A1; }
-    .stop-tag { font-size: 12px; color: #6C7086; }
+    .stop-tag { font-size: 12px; color: #6C7086; text-align: right;}
     .arrival-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-top: 1px solid #2A2B3D; }
     .time { font-size: 15px; font-weight: 700; color: #A6E3A1; }
     .branch { font-size: 13px; color: #CDD6F4; }
@@ -145,7 +145,7 @@ HTML_TEMPLATE = """
     <button id="btn" class="btn-refresh" onclick="pedirDatos()">Actualizar</button>
     <div class="status-box">
       <div id="status" class="status-text">Iniciando...</div>
-      <div id="hint" style="font-size: 10px; color: #FAB387;"></div>
+      <div id="hint" style="font-size: 10px; color: #FAB387;">Actualización auto: 1 min</div>
     </div>
   </div>
 
@@ -177,7 +177,7 @@ HTML_TEMPLATE = """
 
         renderTarjetas(data.items);
         actualizarMapa(data.buses);
-        status.innerText = "Consulta: " + data.hora;
+        status.innerText = "Últ. vez: " + data.hora;
         btn.disabled = false;
       } catch (err) {
         status.innerText = "Error temporal";
@@ -205,8 +205,11 @@ HTML_TEMPLATE = """
           secActual = item.seccion;
           html += `<div class="section-title">📍 ${secActual}</div>`;
         }
+        
+        // Logica implementada: Concatenamos la calle si existe
+        const infoCalle = item.calle ? `<br><b>${item.calle}</b>` : '';
 
-        html += `<div class="card"><div class="card-header"><span class="line-tag line-50b">Línea ${item.linea}</span><span class="stop-tag">Parada ${item.parada}</span></div>`;
+        html += `<div class="card"><div class="card-header"><span class="line-tag line-50b">Línea ${item.linea}</span><span class="stop-tag">Parada ${item.parada}${infoCalle}</span></div>`;
 
         if (!item.arribos || item.arribos.length === 0) {
           html += `<div class="empty">Sin unidades reportando</div>`;
@@ -223,6 +226,9 @@ HTML_TEMPLATE = """
 
     initMap();
     pedirDatos();
+    
+    // Logica implementada: Ejecutar pedirDatos() cada 60000 ms (1 minuto)
+    setInterval(pedirDatos, 60000);
   </script>
 </body>
 </html>
