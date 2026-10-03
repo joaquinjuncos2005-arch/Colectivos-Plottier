@@ -491,7 +491,7 @@ def recolector_fondo():
 
         guardar_estado()
         # Si el Worker falla, se espacian los pedidos (no se lo bombardea)
-        time.sleep(min(9 + 5 * fallos, 45))
+        time.sleep(min(15)
 
 def recolector_paradas_clave():
     """Refresca en segundo plano los arribos de las paradas clave, una por vez."""
@@ -521,7 +521,7 @@ def recolector_paradas_clave():
             ])
         else:
             fallos += 1
-        time.sleep(min(6 + 6 * fallos, 40))
+        time.sleep(20)
 
 # Los hilos se arrancan con la primera petición (no al importar el archivo), así corren
 # siempre en el mismo proceso que atiende la web y comparten la misma memoria.
